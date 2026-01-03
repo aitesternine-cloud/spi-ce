@@ -1,2 +1,512 @@
-# spi-ce
-Trial0
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JeenarthSpices Pro | Premium Indian Spices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary: #c2410c;
+            --primary-dark: #9a3412;
+            --bg: #fdfcfb;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg); 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.3s ease-in; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-backdrop { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(4px); 
+            z-index: 100; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 1rem; 
+        }
+        .modal-backdrop.active { display: flex; }
+
+        .input-field { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border-radius: 12px; 
+            border: 1px solid #e2e8f0; 
+            outline: none; 
+            transition: all 0.2s; 
+        }
+        .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.1); }
+        
+        .spice-card { transition: transform 0.2s; }
+        .spice-card:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <script>
+        // ==========================================
+        // ADMIN CREDENTIALS - SET YOURS HERE
+        // ==========================================
+        const ADMIN_MOBILE = "9595959595"; 
+        const ADMIN_PASSWORD = "admin123"; 
+        // ==========================================
+    </script>
+
+    <!-- NAVIGATION -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-orange-100 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="showView('home')">
+                <div class="bg-orange-700 p-2 rounded-lg text-white shadow-md">
+                    <i class="fas fa-mortar-pestle"></i>
+                </div>
+                <h1 class="text-xl font-black text-orange-900 tracking-tighter uppercase">BharatSpices</h1>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="showView('cart')" class="relative p-2 text-slate-600">
+                    <i class="fas fa-shopping-bag text-lg"></i>
+                    <span id="cart-badge" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">0</span>
+                </button>
+                <div id="nav-auth" class="flex items-center gap-2 ml-2"></div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4">
+        
+        <!-- HOME VIEW -->
+        <section id="view-home" class="view-section active space-y-6">
+            <div class="bg-gradient-to-br from-orange-800 to-orange-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl">
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-extrabold mb-2">Authentic Spices</h2>
+                    <p class="text-orange-100 text-sm opacity-90">Fresh from farm to your kitchen.</p>
+                </div>
+                <i class="fas fa-leaf absolute -bottom-6 -right-6 text-orange-700 text-9xl opacity-20 rotate-12"></i>
+            </div>
+            
+            <div id="product-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Products dynamically added -->
+            </div>
+        </section>
+
+        <!-- CART VIEW -->
+        <section id="view-cart" class="view-section space-y-6">
+            <h2 class="text-2xl font-black text-slate-800">Your Selection</h2>
+            <div id="cart-items" class="space-y-3"></div>
+            <div id="cart-empty-msg" class="hidden text-center py-12 text-slate-400">Your bag is empty.</div>
+            
+            <div class="bg-white p-6 rounded-[2rem] border border-orange-50 shadow-sm space-y-4">
+                <div class="flex justify-between text-xl font-black border-b border-dashed pb-4">
+                    <span>Estimate Bill</span>
+                    <span id="cart-total" class="text-orange-700">₹0</span>
+                </div>
+                <button onclick="submitOrderRequest()" class="w-full bg-orange-700 text-white py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 active:scale-95 transition-transform">
+                    Submit Order Request
+                </button>
+                <p class="text-[10px] text-center text-slate-400 italic">Order will be verified by the owner on WhatsApp.</p>
+            </div>
+        </section>
+
+        <!-- AUTH VIEW (LOGIN / SIGNUP) -->
+        <section id="view-auth" class="view-section py-8">
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-orange-50 text-center max-w-md mx-auto">
+                <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-user text-2xl"></i>
+                </div>
+                <h2 id="auth-title" class="text-2xl font-black mb-2">Create Account</h2>
+                <p id="auth-subtitle" class="text-sm text-slate-500 mb-6">Details required for delivery.</p>
+                
+                <form id="auth-form-el" class="space-y-4 text-left">
+                    <div id="signup-extra-fields" class="space-y-4">
+                        <input type="text" id="user-name" placeholder="Full Name" class="input-field">
+                        <textarea id="user-address" placeholder="Full Home Address (City, Pin, State)" class="input-field h-24"></textarea>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="flex items-center px-4 bg-slate-100 rounded-xl font-bold text-slate-500 text-sm">+91</span>
+                        <input type="tel" id="user-mobile" placeholder="Mobile Number" class="input-field" required>
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold mt-2 shadow-lg active:scale-95 transition-all">Continue</button>
+                </form>
+                
+                <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="mt-6 text-sm font-bold text-orange-700 hover:underline">
+                    Already have an account? Login
+                </button>
+            </div>
+        </section>
+
+        <!-- ADMIN LOGIN -->
+        <section id="view-admin-login" class="view-section py-10">
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border text-center max-w-md mx-auto">
+                <h2 class="text-2xl font-black mb-6">Owner Access</h2>
+                <form id="admin-auth-form" class="space-y-4 text-left">
+                    <input type="tel" id="adm-mobile" placeholder="Admin Mobile" class="input-field" required>
+                    <input type="password" id="adm-pass" placeholder="Password" class="input-field" required>
+                    <button type="submit" class="w-full bg-orange-700 text-white py-4 rounded-xl font-bold shadow-lg">Login to Dashboard</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ADMIN DASHBOARD -->
+        <section id="view-admin" class="view-section space-y-8">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h2 class="text-2xl font-black">Admin Panel</h2>
+                    <p class="text-slate-400 text-xs">Manage inventory and orders.</p>
+                </div>
+                <button onclick="adminLogout()" class="text-red-500 font-bold text-xs uppercase tracking-widest">Logout</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-2xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-wider">Revenue</p>
+                    <p id="stat-revenue" class="text-2xl font-black text-green-600">₹0</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border shadow-sm">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-wider">Stock Sold</p>
+                    <p id="stat-sold" class="text-2xl font-black text-orange-600">0kg</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="font-bold flex items-center gap-2"><i class="fas fa-list-ul text-orange-600"></i> New Order Requests</h3>
+                <div id="admin-orders-list" class="space-y-4"></div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="font-bold flex items-center gap-2"><i class="fas fa-box-open text-orange-600"></i> Inventory Management</h3>
+                <div class="bg-white rounded-[2rem] border overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-400">
+                            <tr><th class="p-4">Product</th><th class="p-4">Stock</th><th class="p-4 text-center">Add</th></tr>
+                        </thead>
+                        <tbody id="inventory-list" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- UPI QR MODAL -->
+    <div id="modal-qr" class="modal-backdrop">
+        <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-xs text-center space-y-5 animate-in zoom-in duration-300">
+            <h3 class="font-bold text-xl">Payment Details</h3>
+            <div id="qr-code-box" class="bg-slate-50 p-4 rounded-3xl border-2 border-dashed border-orange-200 flex justify-center"></div>
+            <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Bill</p>
+                <p id="qr-bill-amount" class="text-3xl font-black text-orange-700">₹0</p>
+            </div>
+            <p class="text-[10px] text-slate-400 italic">Please send a screenshot of the payment when the owner contacts you on WhatsApp.</p>
+            <button onclick="closeModals()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold">Done</button>
+        </div>
+    </div>
+
+    <!-- WHATSAPP BILL POPUP -->
+    <div id="modal-wa" class="modal-backdrop">
+        <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-xs space-y-5">
+            <h3 class="font-bold text-lg">Send Invoice</h3>
+            <p class="text-xs text-slate-500">Confirm customer's WhatsApp number to send the automated bill.</p>
+            <input type="tel" id="wa-bill-num" placeholder="9876543210" class="input-field">
+            <button onclick="confirmBillSend()" class="w-full py-4 bg-green-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2">
+                <i class="fab fa-whatsapp"></i> Send on WhatsApp
+            </button>
+            <button onclick="closeModals()" class="w-full text-slate-400 text-sm font-bold">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA STORE ---
+        const INITIAL_PRODUCTS = [
+            { id: 1, name: 'Premium Jeera', price: 280, stock: 50, icon: '🫚', cat: 'Powder' },
+            { id: 2, name: 'Dhanadal', price: 450, stock: 35, icon: '🌶️', cat: 'Powder' },
+            { id: 3, name: 'Rai Seeds', price: 2600, stock: 12, icon: '🌱', cat: 'Whole' },
+            { id: 4, name: 'Fenugreek Seeds', price: 900, stock: 20, icon: '⚫', cat: 'Whole' },
+            { id: 5, name: 'Sauff', price: 550, stock: 40, icon: '🍛', cat: 'Seeds' }
+        ];
+
+        let state = {
+            currentUser: JSON.parse(localStorage.getItem('bs_user')) || null,
+            allUsers: JSON.parse(localStorage.getItem('bs_userbase')) || [],
+            products: JSON.parse(localStorage.getItem('bs_stock')) || INITIAL_PRODUCTS,
+            orders: JSON.parse(localStorage.getItem('bs_orders_list')) || [],
+            cart: [],
+            authMode: 'signup', // signup or login
+            activeOrderForBill: null
+        };
+
+        function saveAll() {
+            localStorage.setItem('bs_user', JSON.stringify(state.currentUser));
+            localStorage.setItem('bs_userbase', JSON.stringify(state.allUsers));
+            localStorage.setItem('bs_stock', JSON.stringify(state.products));
+            localStorage.setItem('bs_orders_list', JSON.stringify(state.orders));
+        }
+
+        // --- NAVIGATION ---
+        function showView(name) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            const el = document.getElementById('view-' + name);
+            if (el) el.classList.add('active');
+            render();
+            window.scrollTo(0, 0);
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
+        }
+
+        // --- AUTH LOGIC ---
+        function toggleAuthMode() {
+            state.authMode = state.authMode === 'signup' ? 'login' : 'signup';
+            document.getElementById('auth-title').innerText = state.authMode === 'signup' ? 'Create Account' : 'Welcome Back';
+            document.getElementById('auth-subtitle').innerText = state.authMode === 'signup' ? 'Details required for delivery.' : 'Enter your registered mobile.';
+            document.getElementById('signup-extra-fields').style.display = state.authMode === 'signup' ? 'block' : 'none';
+            document.getElementById('auth-toggle-btn').innerText = state.authMode === 'signup' ? 'Already have an account? Login' : 'New User? Sign Up';
+        }
+
+        document.getElementById('auth-form-el').onsubmit = (e) => {
+            e.preventDefault();
+            const mobile = document.getElementById('user-mobile').value;
+            
+            if (state.authMode === 'signup') {
+                const name = document.getElementById('user-name').value;
+                const address = document.getElementById('user-address').value;
+                if (!name || !address || !mobile) return alert("Fill all details");
+                
+                const newUser = { name, mobile, address };
+                state.allUsers.push(newUser);
+                state.currentUser = newUser;
+            } else {
+                const user = state.allUsers.find(u => u.mobile === mobile);
+                if (user) {
+                    state.currentUser = user;
+                } else {
+                    alert("Mobile not found. Please Sign Up.");
+                    return;
+                }
+            }
+            saveAll();
+            showView('home');
+        };
+
+        document.getElementById('admin-auth-form').onsubmit = (e) => {
+            e.preventDefault();
+            const mob = document.getElementById('adm-mobile').value;
+            const pas = document.getElementById('adm-pass').value;
+            if (mob === ADMIN_MOBILE && pas === ADMIN_PASSWORD) {
+                state.isAdmin = true;
+                showView('admin');
+            } else {
+                alert("Incorrect Admin Credentials");
+            }
+        };
+
+        function adminLogout() {
+            state.isAdmin = false;
+            showView('home');
+        }
+
+        function userLogout() {
+            state.currentUser = null;
+            saveAll();
+            showView('home');
+        }
+
+        // --- SHOPPING LOGIC ---
+        function addToCart(pid) {
+            if (!state.currentUser) {
+                showView('auth');
+                return;
+            }
+            const p = state.products.find(x => x.id === pid);
+            if (p.stock <= 0) return alert("Out of stock!");
+            
+            const item = state.cart.find(c => c.id === pid);
+            if (item) item.qty++;
+            else state.cart.push({ ...p, qty: 1 });
+            render();
+        }
+
+        function submitOrderRequest() {
+            if (state.cart.length === 0) return;
+            const total = state.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            
+            const order = {
+                id: 'INV' + Math.floor(Math.random() * 9000 + 1000),
+                customer: state.currentUser,
+                items: [...state.cart],
+                total: total,
+                status: 'Pending',
+                date: new Date().toLocaleDateString()
+            };
+
+            // Stock update
+            state.cart.forEach(c => {
+                const p = state.products.find(x => x.id === c.id);
+                if (p) p.stock -= c.qty;
+            });
+
+            state.orders.push(order);
+            state.cart = [];
+            saveAll();
+
+            // Show Payment QR
+            const upiUrl = `upi://pay?pa=business@upi&pn=BharatSpices&am=${total}&cu=INR&tn=Order_${order.id}`;
+            const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiUrl)}`;
+            document.getElementById('qr-code-box').innerHTML = `<img src="${qrApi}" class="w-36 h-36">`;
+            document.getElementById('qr-bill-amount').innerText = '₹' + total;
+            document.getElementById('modal-qr').classList.add('active');
+            showView('home');
+        }
+
+        // --- ADMIN DASHBOARD ACTIONS ---
+        function markPaid(id) {
+            const o = state.orders.find(x => x.id === id);
+            if (o) o.status = 'Paid';
+            saveAll();
+            render();
+        }
+
+        function restock(id) {
+            const p = state.products.find(x => x.id === id);
+            p.stock += 10;
+            saveAll();
+            render();
+        }
+
+        function openBillPopup(id) {
+            state.activeOrderForBill = state.orders.find(o => o.id === id);
+            document.getElementById('wa-bill-num').value = state.activeOrderForBill.customer.mobile;
+            document.getElementById('modal-wa').classList.add('active');
+        }
+
+        function confirmBillSend() {
+            const num = document.getElementById('wa-bill-num').value;
+            const o = state.activeOrderForBill;
+            if (!num || !o) return;
+
+            const items = o.items.map(i => `${i.name} x ${i.qty}kg`).join('%0A');
+            const text = `*BHARAT SPICES INVOICE*%0AOrder: ${o.id}%0A-------------------%0A${items}%0A-------------------%0A*Total: ₹${o.total}*%0A%0AAddress: ${o.customer.address}%0A%0A_Please pay via UPI & send screenshot._`;
+            window.open(`https://wa.me/91${num}?text=${text}`, '_blank');
+            closeModals();
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function render() {
+            const authNav = document.getElementById('nav-auth');
+            if (state.isAdmin) {
+                authNav.innerHTML = `<button onclick="showView('admin')" class="bg-black text-white px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider">Dashboard</button>`;
+            } else if (state.currentUser) {
+                authNav.innerHTML = `
+                    <span class="text-[10px] font-bold text-slate-400 mr-2">${state.currentUser.name}</span>
+                    <button onclick="userLogout()" class="p-2 text-slate-300"><i class="fas fa-sign-out-alt"></i></button>
+                `;
+            } else {
+                authNav.innerHTML = `
+                    <button onclick="showView('admin-login')" class="p-2 text-slate-300 mr-1"><i class="fas fa-shield-halved"></i></button>
+                    <button onclick="showView('auth')" class="bg-orange-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md">Login</button>
+                `;
+            }
+
+            // Products
+            const grid = document.getElementById('product-grid');
+            if (grid) {
+                grid.innerHTML = state.products.map(p => `
+                    <div class="spice-card bg-white p-4 rounded-[2rem] border border-orange-50 shadow-sm space-y-3">
+                        <div class="h-28 bg-orange-50 rounded-2xl flex items-center justify-center text-5xl">${p.icon}</div>
+                        <div>
+                            <p class="text-[9px] font-bold text-orange-500 uppercase tracking-widest">${p.cat}</p>
+                            <h4 class="font-bold text-sm text-slate-800">${p.name}</h4>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <p class="text-xl font-black text-orange-900">₹${p.price}</p>
+                            <button onclick="addToCart(${p.id})" class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Cart
+            const cartItems = document.getElementById('cart-items');
+            if (cartItems) {
+                cartItems.innerHTML = state.cart.map(i => `
+                    <div class="bg-white p-4 rounded-2xl flex justify-between items-center border border-orange-50">
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl">${i.icon}</div>
+                            <div>
+                                <p class="font-bold text-sm">${i.name}</p>
+                                <p class="text-[10px] text-slate-400">${i.qty}kg x ₹${i.price}</p>
+                            </div>
+                        </div>
+                        <p class="font-black text-orange-800">₹${i.qty * i.price}</p>
+                    </div>
+                `).join('');
+                document.getElementById('cart-empty-msg').style.display = state.cart.length ? 'none' : 'block';
+                document.getElementById('cart-badge').innerText = state.cart.length;
+                document.getElementById('cart-badge').style.display = state.cart.length ? 'flex' : 'none';
+                document.getElementById('cart-total').innerText = '₹' + state.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            }
+
+            // Admin Dashboard
+            if (state.isAdmin) {
+                const invList = document.getElementById('inventory-list');
+                invList.innerHTML = state.products.map(p => `
+                    <tr>
+                        <td class="p-4"><p class="font-bold text-slate-700">${p.name}</p><p class="text-[9px] text-slate-400">${p.cat}</p></td>
+                        <td class="p-4 ${p.stock < 10 ? 'text-red-500 font-bold' : ''}">${p.stock}kg</td>
+                        <td class="p-4 text-center"><button onclick="restock(${p.id})" class="w-8 h-8 bg-orange-50 text-orange-600 rounded-lg">+</button></td>
+                    </tr>
+                `).join('');
+
+                const orderList = document.getElementById('admin-orders-list');
+                const pending = state.orders.slice().reverse();
+                if (pending.length === 0) {
+                    orderList.innerHTML = `<div class="text-center py-10 text-slate-300 text-sm italic">No orders yet.</div>`;
+                } else {
+                    orderList.innerHTML = pending.map(o => `
+                        <div class="bg-white p-5 rounded-[2rem] border shadow-sm space-y-4">
+                            <div class="flex justify-between items-start border-b border-dashed pb-3">
+                                <div>
+                                    <h5 class="font-black text-orange-800 text-sm">${o.customer.name}</h5>
+                                    <p class="text-[10px] font-bold text-slate-500"><i class="fas fa-phone-alt mr-1"></i> +91 ${o.customer.mobile}</p>
+                                    <p class="text-[9px] text-slate-400 mt-1 max-w-[200px] leading-relaxed">${o.customer.address}</p>
+                                </div>
+                                <span class="text-[8px] font-bold px-3 py-1 rounded-full uppercase ${o.status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${o.status}</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 italic">${o.items.map(i => i.name + ' (' + i.qty + 'kg)').join(', ')}</div>
+                            <div class="flex justify-between items-center pt-2">
+                                <p class="text-xl font-black">₹${o.total}</p>
+                                <div class="flex gap-2">
+                                    <button onclick="openBillPopup('${o.id}')" class="w-10 h-10 bg-green-50 text-green-600 rounded-xl flex items-center justify-center"><i class="fab fa-whatsapp text-lg"></i></button>
+                                    ${o.status === 'Pending' ? `<button onclick="markPaid('${o.id}')" class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"><i class="fas fa-check"></i></button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                const revenue = state.orders.filter(o => o.status === 'Paid').reduce((s, o) => s + o.total, 0);
+                const kgs = state.orders.reduce((s, o) => s + o.items.reduce((sum, i) => sum + i.qty, 0), 0);
+                document.getElementById('stat-revenue').innerText = '₹' + revenue;
+                document.getElementById('stat-sold').innerText = kgs + 'kg';
+            }
+        }
+
+        // Initialize
+        window.onload = render;
+    </script>
+</body>
+</html>
